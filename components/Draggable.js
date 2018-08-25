@@ -24,7 +24,21 @@ export default class Draggable extends Component<Props, State> {
     this.panResponder = PanResponder.create({
       // true so that panResponder starts responding to touch events
       onStartShouldSetPanResponder: () => true,
+      onPanResponderGrant: (e, gesture) => {
+        pan.setOffset({
+          x: this._val.x,
+          y: this._val.y,
+        });
+        pan.setValue({ x: 0, y: 0 });
+      },
       onPanResponderMove: Animated.event([null, { dx: pan.x, dy: pan.y }]),
+      // when touch is released, go back to original in a spring motion
+      onPanResponderRelease: (e, gesture) => {
+        Animated.spring(pan, {
+          toValue: { x: 0, y: 0 },
+          friction: 5,
+        }).start();
+      },
     });
   }
 
