@@ -56,6 +56,7 @@ export default class Draggable extends Component<Props, State> {
     });
   }
 
+  // 200 is the height of the drop zone
   isDropArea = gesture => gesture.moveY < 200;
 
   render() {
