@@ -10,12 +10,15 @@ type State = {
 export default class Draggable extends Component<Props, State> {
   state = {
     pan: new Animated.ValueXY(),
+    showDraggable: true,
+    dropAreaValues: null,
+    opacity: new Animated.Value(1),
   };
 
   componentWillMount() {
     this._val = { x: 0, y: 0 };
 
-    const { pan } = this.state;
+    const { pan, opacity } = this.state;
 
     // adding a listener for the change
     pan.addListener(value => (this._val = value));
@@ -34,22 +37,36 @@ export default class Draggable extends Component<Props, State> {
       onPanResponderMove: Animated.event([null, { dx: pan.x, dy: pan.y }]),
       // when touch is released, go back to original in a spring motion
       onPanResponderRelease: (e, gesture) => {
-        Animated.spring(pan, {
-          toValue: { x: 0, y: 0 },
-          friction: 5,
-        }).start();
+        if (this.isDropArea(gesture)) {
+          Animated.timing(opacity, {
+            toValue: 0,
+            duration: 1000,
+          }).start(() =>
+            this.setState({
+              showDraggable: false,
+            })
+          );
+        } else {
+          Animated.spring(pan, {
+            toValue: { x: 0, y: 0 },
+            friction: 5,
+          }).start();
+        }
       },
     });
   }
 
+  isDropArea = gesture => gesture.moveY < 200;
+
   render() {
+    const { pan, opacity } = this.state;
     const panStyle = {
-      transform: this.state.pan.getTranslateTransform(),
+      transform: pan.getTranslateTransform(),
     };
     return (
       <Animated.View
         {...this.panResponder.panHandlers}
-        style={[panStyle, styles.circle]}
+        style={[panStyle, styles.circle, { opacity }]}
       />
     );
   }
